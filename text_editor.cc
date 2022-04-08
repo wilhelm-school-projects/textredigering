@@ -7,7 +7,7 @@
 #include <queue>
 
 template <typename T>
-class Queue_Adapter             // Snott från stackoverflow, är "adapter" en grej och isf vad innebär att en klass är adapter?
+class Queue_Adapter             
 {
 public:
     using value_type = T;
@@ -67,7 +67,6 @@ void insert_args_to_queue(Queue_Adapter<std::pair<std::string, std::string>> & Q
 
 void execute_args(std::queue<std::pair<std::string, std::string>> & args_queue, std::vector<std::string> & text)
 {
-
     while (!args_queue.empty())
     {
         std::cout << args_queue.front().first << " " << args_queue.front().second << std::endl;
