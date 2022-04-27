@@ -19,6 +19,9 @@ void do_print(std::vector<std::string> const& text);
 void do_table(std::vector<std::string> const& text);
 void do_freqtable(std::vector<std::string> const& text);
 
+template <typename container>
+void print(container const& c, std::size_t max_width, std::ios_base &(*positioning)(std::ios_base &));
+
 int main(int argc, char* argv[])
 {
     if (argc < 3)
@@ -130,13 +133,7 @@ void do_table(std::vector<std::string> const& text)
                                                 return lhs.size() < rhs.size();
                                             })->size()};
     
-    std::transform(begin(word_freq), end(word_freq), std::ostream_iterator<std::string>(std::cout, "\n"),
-                                                    [max_width](std::pair<std::string, int> const& p)
-                                                    {
-                                                        std::stringstream line{};
-                                                        line << std::left << std::setw(max_width) << p.first << " " << p.second;
-                                                        return line.str();
-                                                    });                                            
+    print(word_freq, max_width, std::left);                                          
 }
 
 void do_freqtable(std::vector<std::string> const& text)
@@ -148,17 +145,17 @@ void do_freqtable(std::vector<std::string> const& text)
                                     ++word_freq[word];
                                 });
 
-    std::vector<std::string> unique_words{};
+    std::vector<std::pair<std::string, int>> unique_words{};
     std::transform(begin(word_freq), end(word_freq), std::back_inserter(unique_words),
                                                     [](std::pair<std::string, int> const& p)
                                                     {
-                                                        return p.first;
+                                                        return p;
                                                     });
 
     std::sort(begin(unique_words), end(unique_words), 
-                                    [&word_freq](std::string const& first, std::string const& second)
+                                    [](std::pair<std::string, int> const& first, std::pair<std::string, int> const& second)
                                     {
-                                        return word_freq[first] > word_freq[second];
+                                        return first.second > second.second;
                                     });
 
     std::size_t max_width {std::max_element(begin(text), end(text), 
@@ -167,11 +164,16 @@ void do_freqtable(std::vector<std::string> const& text)
                                                 return lhs.size() < rhs.size();
                                             })->size()};
 
-    std::transform(begin(unique_words), end(unique_words), std::ostream_iterator<std::string>(std::cout, "\n"), 
-                                                        [&word_freq, max_width](std::string const& s)
+    print(unique_words, max_width, std::right);
+}
+template <typename container>
+void print(container const& c, std::size_t max_width, std::ios_base &(*positioning)(std::ios_base &))
+{
+    std::transform(begin(c), end(c), std::ostream_iterator<std::string>(std::cout, "\n"), 
+                                                        [max_width, &positioning](std::pair<std::string, int> const& p)
                                                         {
                                                             std::stringstream line{};
-                                                            line << std::setw(max_width) << s << " " << std::to_string(word_freq[s]);
+                                                            line << positioning << std::setw(max_width) << p.first << " " << p.second;
                                                             return line.str();
                                                         });
 }
